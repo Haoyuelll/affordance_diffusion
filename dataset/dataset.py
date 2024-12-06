@@ -60,8 +60,8 @@ class ConcatDatasetProb(Dataset):
 
     @property
     def cummulative_sizes(self):
-        warnings.warn("cummulative_sizes attribute is renamed to "
-                      "cumulative_sizes", DeprecationWarning, stacklevel=2)
+        # warnings.warn("cummulative_sizes attribute is renamed to "
+        #               "cumulative_sizes", DeprecationWarning, stacklevel=2)
         return self.cumulative_sizes
 
 

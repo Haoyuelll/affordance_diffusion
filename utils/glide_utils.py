@@ -52,7 +52,9 @@ MODEL_TYPES = ["upsample", "base-inpaint", "upsample-inpaint"]
 # TODO: clear !!!!
 
 def get_uncond_tokens_mask(tokenizer: Encoder):
-    uncond_tokens, uncond_mask = tokenizer.padded_tokens_and_mask([], 128)
+    end_token = tokenizer.end_token
+    uncond_tokens = [end_token] * 128
+    uncond_mask  = [False] * 128
     return th.tensor(uncond_tokens), th.tensor(uncond_mask, dtype=th.bool)
 
 
@@ -157,8 +159,8 @@ def sample(
             inpaint_image.to(device), inpaint_mask.to(device), mask_param.to(device), text
     tokens, mask, reals, inpaint_image, inpaint_mask, mask_param,text = val_batch
 
-    # if soft_mask:
-    inpaint_mask = 1 - glide_model.splat_to_mask(mask_param, size[-1], func_ab=lambda x: x**2)
+    if soft_mask:
+        inpaint_mask = 1 - glide_model.splat_to_mask(mask_param, size[-1], func_ab=lambda x: x**2)
     if not soft_mask:
         inpaint_mask = inpaint_mask > 0.5
 

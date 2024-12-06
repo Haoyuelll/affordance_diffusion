@@ -13,6 +13,8 @@ import torch.nn.functional as F
 def build_stn(cfg):
     if cfg.mask_mode == 'lollipop':
         net = LollipopMask(soft=cfg.soft_mask)
+    else:
+        return None
     return net
 
 

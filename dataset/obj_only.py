@@ -62,7 +62,7 @@ class ObjImgDataset(Dataset):
         return len(self.image_files)
 
     def random_sample(self):
-        return self.__getitem__(randint(0, self.__len__() - 1))
+        return self.__getitem__(np.random.randint(0, self.__len__() - 1))
 
     def sequential_sample(self, ind):
         if ind >= self.__len__() - 1:

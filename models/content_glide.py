@@ -89,6 +89,7 @@ class ContentNet(BaseModule):
         tokens, masks, reals, inpaint_image, inpaint_mask, mask_param, _ = batch
         tokens = tokens.to(device)
         masks, reals, inpaint_image, inpaint_mask, mask_param, = masks.to(device), reals.to(device), inpaint_image.to(device), inpaint_mask.to(device), mask_param.to(device)
+        breakpoint()
         if self.cfg.soft_mask:
             inpaint_mask = 1 - glide_model.splat_to_mask(mask_param, inpaint_mask.shape[-1], func_ab=lambda x: x**2)            
         timesteps = torch.randint(

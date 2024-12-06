@@ -237,7 +237,7 @@ def main_worker(cfg):
                              logger=logger,
                              max_steps=cfg.max_steps,
                              callbacks=[model_summary, checkpoint_callback, LoggerCallback()],
-                             progress_bar_refresh_rate=None,
+                            #  progress_bar_refresh_rate=None,
                              gradient_clip_val=cfg.model.grad_clip,
                              gradient_clip_algorithm='norm',
                              **val_kwargs,

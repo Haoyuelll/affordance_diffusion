@@ -1,5 +1,5 @@
 defaults:
-  - environment: grogu
+  - environment: vlr
   - hydra: default
   - data@trainsets: [hoi4d_train]
   - data@testsets: [hoi4d_test]
@@ -45,7 +45,7 @@ resume_train_from: ${exp_dir}/checkpoints/last.ckpt
 use_fp16: False
 
 # model configs
-mask_mode: lollipop
+mask_mode: gt
 soft_mask: ${model.soft_mask}
 
 # control flow params

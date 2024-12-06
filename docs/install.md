@@ -11,9 +11,9 @@
 1. Install third party packages  if you want to extract 3D hand pose from the generated hands and overlay its rendering.
     - Install frankmocap and pytorch3d, etc. 
         ```
-        bash scripts/install_thrid_party.sh
+        bash scripts/install_third_party.sh
         ``` 
-    - Download `MANO_RIGHT.pkl` from the [official website](https://mano.is.tue.mpg.de/) and put it under `thrid_party/mano/MANO_RIGHT.pkl`
+    - Download `MANO_RIGHT.pkl` from the [official website](https://mano.is.tue.mpg.de/) and put it under `third_party/mano/MANO_RIGHT.pkl`
 
 
 ## Environment specification

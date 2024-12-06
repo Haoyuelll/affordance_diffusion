@@ -1,0 +1,21 @@
+# path to store model, output
+# $output/
+#   release/
+output: output/ 
+
+
+# path to store data
+# $data/
+#   hoi4d/
+#     HOI4D_glide/
+#     Sets/
+data: vlr_data
+
+
+# path to store pretrained models
+# $pretrain/
+#   glide/
+#     base_inpaint.pt
+#   stable/
+#     base_inpaint.pt
+pretrain: pretrain

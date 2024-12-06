@@ -23,7 +23,7 @@ pip install -r requirements.txt
 # mkdir -p externals
 # # my modification on relative path
 # git clone https://github.com/judyye/frankmocap.git externals/frankmocap
-cd thrid_party/frankmocap
+cd third_party/frankmocap
 bash scripts/install_frankmocap.sh
 cd ../..
 

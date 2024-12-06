@@ -19,6 +19,8 @@ from torch.utils.data import Dataset
 from utils.glide_utils import get_uncond_tokens_mask
 from utils.train_utils import pil_image_to_norm_tensor
 
+import os
+
 
 def random_resized_crop(image, shape, resize_ratio=1.0, return_T=False):
     """
@@ -90,6 +92,8 @@ class HO3Pairs(Dataset):
                 self.image_files.append(
                     '{}_frame{:04d}'.format(
                         data['vid_index'].replace('/', '_'), data['frame_number']))
+        elif os.path.isdir(split):
+            self.image_files = [fname[:-4] for fname in os.listdir(split)[:10]]
         else:
             self.image_files = [index.strip() for index in open(split)]
 
@@ -105,7 +109,7 @@ class HO3Pairs(Dataset):
         return len(self.image_files)
 
     def random_sample(self):
-        return self.__getitem__(randint(0, self.__len__() - 1))
+        return self.__getitem__(np.random.randint(0, self.__len__() - 1))
 
     def sequential_sample(self, ind):
         if ind >= self.__len__() - 1:
