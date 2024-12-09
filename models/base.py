@@ -78,7 +78,6 @@ class BaseModule(pl.LightningModule):
         if torch.isnan(loss):
             import pdb; pdb.set_trace()
 
-
         if self.global_step % self.cfg.print_frequency == 0:
             losses["loss"] = loss
             self.logger.log_metrics(losses, step=self.global_step)
@@ -237,7 +236,6 @@ def main_worker(cfg):
                              logger=logger,
                              max_steps=cfg.max_steps,
                              callbacks=[model_summary, checkpoint_callback, LoggerCallback()],
-                            #  progress_bar_refresh_rate=None,
                              gradient_clip_val=cfg.model.grad_clip,
                              gradient_clip_algorithm='norm',
                              **val_kwargs,

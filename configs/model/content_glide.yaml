@@ -4,8 +4,8 @@ model:  ContentNet
 soft_mask: False
 jitter_ratio: 0.1
 grad_clip: 0. 
-freeze_transformer: True
-freeze_diffusion: False
+freeze_transformer: False
+freeze_diffusion: True
 
 side_x: 64
-resume_ckpt: ${environment.pretrain}/glide/base_inpaint.pt
+resume_ckpt: /home/haoyueliu/project/affordance_diffusion/output/release/content_glide/checkpoints/last.ckpt

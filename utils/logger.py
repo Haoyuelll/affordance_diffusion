@@ -3,6 +3,7 @@
 # see CC-BY-NC-SA-4.0.md for details
 # Written by Yufei Ye (https://github.com/JudyYe)
 # --------------------------------------------------------
+from datetime import datetime
 import logging
 import os
 import os.path as osp
@@ -20,7 +21,7 @@ class LoggerCallback(Callback):
     def __init__(self) -> None:
         super().__init__()
 
-    def on_train_batch_start(self, trainer, pl_module) -> None:
+    def on_train_batch_start(self, trainer, pl_module, batch, batch_idx, dataloader_idx=None) -> None:
         if hasattr(pl_module.logger, 'commit'):
             pl_module.logger.commit(step=pl_module.global_step)
         else:
@@ -106,21 +107,21 @@ class LFSLogger(LightningLoggerBase):
 class MyWandbLogger(WandbLogger):
     def __init__(self, name: Optional[str] = None, save_dir: Optional[str] = None, offline: Optional[bool] = False, id: Optional[str] = None, anonymous: Optional[bool] = None, version: Optional[str] = None, project: Optional[str] = None, log_model: Union[str, bool] = False, experiment=None, prefix: Optional[str] = "", agg_key_funcs: Optional[Mapping[str, Callable[[Sequence[float]], float]]] = None, agg_default_func: Optional[Callable[[Sequence[float]], float]] = None, **kwargs):
         # super().__init__(name, save_dir, offline, id, anonymous, version, project, log_model, experiment, prefix, agg_key_funcs, agg_default_func, **kwargs)
+        super().__init__(
+            name=name,
+            save_dir=save_dir,
+            offline=offline,
+            id=id,
+            version=version,
+            project=project,
+            prefix=prefix,
+            log_model=log_model,
+            experiment=experiment,
+            **kwargs,
+        )
+        
         self.to_commit = {}
         self.to_commit_step = -1
-        
-        self._name=name 
-        self._save_dir=save_dir 
-        self._offline=offline 
-        self._id=id 
-        self._anonymous=anonymous 
-        self._version=version 
-        self._project=project 
-        self._log_model=log_model 
-        self._experiment=experiment 
-        self._prefix=prefix 
-        self._agg_key_funcs=agg_key_funcs 
-        self._agg_default_func=agg_default_func
     
     @rank_zero_only
     def commit(self, step=None):
@@ -161,15 +162,16 @@ def build_logger(cfg):
         if os.path.exists(f"{cfg.exp_dir}/runid.txt"):
             runid = open(f"{cfg.exp_dir}/runid.txt").read()
         
+        time_str = datetime.now().strftime("%Y%m%d_%H%M%S")
         log = MyWandbLogger(
-            project=cfg.project_name + osp.dirname(cfg.expname),
-            name=osp.basename(cfg.expname),
+            project=cfg.project_name + osp.dirname(cfg.expname) + "_modified",
+            name=osp.basename(cfg.expname) + "_" + time_str,
             save_dir=osp.join(cfg.exp_dir, 'log'),
             id=runid,
             save_code=True,
             settings=wandb.Settings(start_method='thread'),
         )
-        # open(f"{cfg.exp_dir}/runid.txt", 'w').write(wandb.run.id)
+        open(f"{cfg.exp_dir}/runid.txt", 'w').write(wandb.run.id)
 
     else:
         raise NotImplementedError

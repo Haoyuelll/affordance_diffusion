@@ -14,6 +14,7 @@ from glide_text2im.text2im_model import Text2ImUNet
 from models.base import BaseModule
 from utils.glide_utils import load_model
 from utils.train_utils import load_my_state_dict
+from utils.loss_utils import PerceptualLoss
 
 
 class InsertText2ImUNet(Text2ImUNet):
@@ -88,8 +89,10 @@ class ContentNet(BaseModule):
 
         tokens, masks, reals, inpaint_image, inpaint_mask, mask_param, _ = batch
         tokens = tokens.to(device)
+        
+        # [torch.Size([8, 128]), torch.Size([8, 3, 64, 64]), torch.Size([8, 3, 64, 64]), torch.Size([8, 1, 64, 64]), torch.Size([8, 6])]
         masks, reals, inpaint_image, inpaint_mask, mask_param, = masks.to(device), reals.to(device), inpaint_image.to(device), inpaint_mask.to(device), mask_param.to(device)
-        breakpoint()
+        
         if self.cfg.soft_mask:
             inpaint_mask = 1 - glide_model.splat_to_mask(mask_param, inpaint_mask.shape[-1], func_ab=lambda x: x**2)            
         timesteps = torch.randint(
@@ -108,6 +111,23 @@ class ContentNet(BaseModule):
             inpaint_mask=inpaint_mask, 
         )
         epsilon = model_output[:, :3]
-        loss = F.mse_loss(epsilon, noise.to(device).detach())        
-        return loss, {'loss': loss}
+        mse_loss = F.mse_loss(epsilon, noise.to(device).detach())
+        
+        image = self.denoise(noise.to(device).detach()).to(device)
+        percep_loss = PerceptualLoss()(image, reals)
+        
+        loss = mse_loss + 0.01*percep_loss 
+                      
+        return loss, {'loss': loss, "mse_loss": mse_loss, "percep_loss": percep_loss}
 
+    def denoise(self, x0, noise_level=0.05):
+        e = torch.randn_like(x0)
+        total_T = self.diffusion.num_timesteps  # TODO: pay attention to step -1 or not 0
+        total_noise_levels = int(noise_level * total_T)  # 1: all noised  
+
+        a = self.diffusion.alphas_cumprod
+        # image_utils.save_images(x0, osp.join(args.save_dir, 'x0'), scale=True)
+        x = x0 * self.diffusion.sqrt_alphas_cumprod[total_noise_levels - 1] + \
+            e * self.diffusion.sqrt_one_minus_alphas_cumprod[total_noise_levels - 1]
+            
+        return x

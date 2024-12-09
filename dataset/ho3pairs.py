@@ -93,7 +93,10 @@ class HO3Pairs(Dataset):
                     '{}_frame{:04d}'.format(
                         data['vid_index'].replace('/', '_'), data['frame_number']))
         elif os.path.isdir(split):
-            self.image_files = [fname[:-4] for fname in os.listdir(split)[:10]]
+            self.image_files = [fname[:-4] for fname in os.listdir(split)]
+            if shuffle:
+                np.random.shuffle(self.image_files)
+                self.image_files = list(self.image_files[:1000])
         else:
             self.image_files = [index.strip() for index in open(split)]
 
