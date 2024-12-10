@@ -87,11 +87,11 @@ class ContentNet(BaseModule):
         glide_model = self.glide_model
         glide_diffusion = self.diffusion
 
-        tokens, masks, reals, inpaint_image, inpaint_mask, mask_param, _ = batch
+        tokens, masks, reals, inpaint_image, inpaint_mask, mask_param, text = batch
         tokens = tokens.to(device)
         
         # [torch.Size([8, 128]), torch.Size([8, 3, 64, 64]), torch.Size([8, 3, 64, 64]), torch.Size([8, 1, 64, 64]), torch.Size([8, 6])]
-        masks, reals, inpaint_image, inpaint_mask, mask_param, = masks.to(device), reals.to(device), inpaint_image.to(device), inpaint_mask.to(device), mask_param.to(device)
+        masks, reals, inpaint_image, inpaint_mask, mask_param = masks.to(device), reals.to(device), inpaint_image.to(device), inpaint_mask.to(device), mask_param.to(device)
         
         if self.cfg.soft_mask:
             inpaint_mask = 1 - glide_model.splat_to_mask(mask_param, inpaint_mask.shape[-1], func_ab=lambda x: x**2)            
@@ -109,16 +109,17 @@ class ContentNet(BaseModule):
             tokens=tokens.to(device),
             inpaint_image=inpaint_image, 
             inpaint_mask=inpaint_mask, 
+            text=text
         )
         epsilon = model_output[:, :3]
         mse_loss = F.mse_loss(epsilon, noise.to(device).detach())
         
-        image = self.denoise(noise.to(device).detach()).to(device)
-        percep_loss = PerceptualLoss()(image, reals)
-        
-        loss = mse_loss + 0.01*percep_loss 
+        # image = self.denoise(noise.to(device).detach()).to(device)
+        # percep_loss = PerceptualLoss()(image, reals)
+        # loss = mse_loss + 0.001 * percep_loss 
                       
-        return loss, {'loss': loss, "mse_loss": mse_loss, "percep_loss": percep_loss}
+        # return loss, {'loss': loss, "mse_loss": mse_loss, "percep_loss": percep_loss}
+        return mse_loss, {'loss': mse_loss}
 
     def denoise(self, x0, noise_level=0.05):
         e = torch.randn_like(x0)

@@ -257,6 +257,8 @@ class CascadeAffordance:
             if self.what_cfg is None or not self.what_cfg.soft_mask:
                 inpaint_mask = (inpaint_mask > 0.5).float()
         
+        
+        # Content alone
         if self.what is not None:
             H = self.what_cfg.side_x
             what_batch = tokens.to(device), masks.to(device), reals.to(device), \

@@ -164,7 +164,7 @@ def build_logger(cfg):
         
         time_str = datetime.now().strftime("%Y%m%d_%H%M%S")
         log = MyWandbLogger(
-            project=cfg.project_name + osp.dirname(cfg.expname) + "_modified",
+            project=cfg.project_name + osp.dirname(cfg.expname) + "_" + "time_str",
             name=osp.basename(cfg.expname) + "_" + time_str,
             save_dir=osp.join(cfg.exp_dir, 'log'),
             id=runid,

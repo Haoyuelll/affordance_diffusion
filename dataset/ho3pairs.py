@@ -16,7 +16,7 @@ import torchvision.transforms.functional as F
 from torchvision import transforms as T
 from torchvision.transforms import Compose, RandomApply, ToPILImage, ToTensor
 from torch.utils.data import Dataset
-from utils.glide_utils import get_uncond_tokens_mask
+from utils.glide_utils import get_uncond_tokens_mask, get_tokens_and_mask
 from utils.train_utils import pil_image_to_norm_tensor
 
 import os
@@ -107,6 +107,7 @@ class HO3Pairs(Dataset):
         self.side_x = side_x
         self.side_y = side_y
         self.tokenizer = tokenizer
+        self.hand_params = None
 
     def __len__(self):
         return len(self.image_files)
@@ -145,12 +146,27 @@ class HO3Pairs(Dataset):
                 box_list.append(f_box(hand_box['left_hand']))
         return np.array(box_list)
 
+    def load_hand_param(self, ind):
+        data = np.load("vlr_data/param/{}_params.npz".format(self.image_files[ind]))
+        hand_pose = th.tensor(data["hand_pose"])
+        bending_angles = [
+            rotation_matrix_to_axis_angle(hand_pose[0, joint])
+            for joint in range(hand_pose.shape[1])
+        ]
+            
+        return bending_angles
+    
     def __getitem__(self, ind):
         image_file = self.image_dir.format(self.image_files[ind])
-
-        # null text
-        tokens, mask = get_uncond_tokens_mask(self.tokenizer)
-        text = ''
+        
+        try:
+            hand_param = self.load_hand_param(ind)
+            text = " ".join(hand_param)
+            tokens, mask = get_tokens_and_mask(self.tokenizer, text)
+        except:
+            # null text
+            tokens, mask = get_uncond_tokens_mask(self.tokenizer)
+            text = ''
 
         try:
             original_pil_image = PIL.Image.open(image_file).convert("RGB")
@@ -389,3 +405,7 @@ def convert(ellipse_list, origX, origY):
     params = np.concatenate([x[..., None], y[..., None], covs], -1)
     return params
 
+def rotation_matrix_to_axis_angle(rot_matrices):
+    angles = th.arccos((th.trace(rot_matrices) - 1) / 2.0)  # Extract angle from trace
+    return int(angles / th.pi * 180)
+    

@@ -107,8 +107,9 @@ class Text2ImUNet(UNetModel):
             if self.xf_ar:
                 self.unemb.to(th.float16)
 
-    def get_text_emb(self, tokens, mask):
+    def get_text_emb(self, tokens, mask, **kwargs):
         assert tokens is not None
+        text = kwargs.get("text")
 
         if self.cache_text_emb and self.cache is not None:
             assert (
@@ -117,7 +118,10 @@ class Text2ImUNet(UNetModel):
             return self.cache
 
         xf_in = self.token_embedding(tokens.long())
-        xf_in = xf_in + self.positional_embedding[None]
+        if text is not None and text != "":
+            xf_in = xf_in + self.positional_embedding[text]
+        else:
+            xf_in = xf_in + self.positional_embedding[None]
         if self.xf_padding:
             assert mask is not None
             xf_in = th.where(mask[..., None], xf_in, self.padding_embedding[None])
@@ -141,11 +145,11 @@ class Text2ImUNet(UNetModel):
     def del_cache(self):
         self.cache = None
 
-    def forward(self, x, timesteps, tokens=None, mask=None):
+    def forward(self, x, timesteps, tokens=None, mask=None, **kwargs):
         hs = []
         emb = self.time_embed(timestep_embedding(timesteps, self.model_channels))
         if self.xf_width:
-            text_outputs = self.get_text_emb(tokens, mask)
+            text_outputs = self.get_text_emb(tokens, mask, **kwargs)
             xf_proj, xf_out = text_outputs["xf_proj"], text_outputs["xf_out"]
             emb = emb + xf_proj.to(emb)
         else:
